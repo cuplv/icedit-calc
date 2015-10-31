@@ -1,0 +1,124 @@
+embed {{ tex-preamble }}
+
+metavar cur ::=
+metavar data ::=
+
+grammar
+datacur :: 'datacur_' ::=
+  | data :: :: data
+  | cur :: :: cur
+
+grammar
+datas {{ tex ds }} :: 'datas_' ::=
+ | nil                :: :: nil
+ | cons datacur datas :: :: cons
+
+dataz {{ tex dz }} :: 'dataz_' ::=
+ | ( datas1 , cur , datas2 ) :: :: zipper 
+
+action {{ tex a }} :: 'action_' ::= {{ com Actions }}
+ | cmd :: :: cmd   {{ com Command }}
+ | undo :: :: undo {{ com Undo }}
+ | redo :: :: redo {{ com Redo }}
+
+cmds {{ tex cs }} :: 'cmds_' ::=
+ | nil           :: :: nil {{ tex \epsilon }}
+ | cons cmd cmds :: :: cons {{ tex [[cmd]] :: [[cmds]] }}
+
+cmdz {{ tex cz }} :: 'cmdz_' ::=
+ | ( cmds1 , cmds2 ) :: :: zipper
+
+dir :: 'dir_' ::=
+ | L :: :: Left
+ | R :: :: Right
+
+cmd {{ tex c }} :: 'cmd_' ::=
+ | insert data dir :: :: insert
+ | replace data dir :: :: replace
+ | remove dir :: :: remove
+ | jumpto cur :: :: jumpto    {{ com Jump current cursor to position of [[cur]] }}
+ | switchto cur :: :: switchto{{ com Switch current cursor to [[cur]] }}
+ | mkcursor cur :: :: mkcursor
+
+actions :: 'actions_' ::=
+ | nil :: :: nil {{ tex \epsilon }}
+ | cons actions action :: :: cons {{ tex [[actions]] :: [[action]] }}
+
+defns
+J :: '' ::=
+
+defn
+actions !! cmdz
+:: :: actions2Cmdz :: 'A2C_'
+{{ tex [[actions]] \Downarrow [[cmdz]] }}
+{{ com Performing [[actions]] yields command zipper [[cmdz]] }}
+by
+
+-------------------------------------- :: nil
+nil !! (nil, nil)
+
+actions !! (cons cmd cmds1, cmds2)
+---------------------------------------------- :: undo
+cons actions undo !! (cmds1, cons cmd cmds2)
+
+actions !! (cmds1, cons cmd cmds2)
+---------------------------------------------- :: redo
+cons actions redo  !! (cons cmd cmds1, cmds2)
+
+actions !! (cmds1, cmds2)
+---------------------------------------------- :: cmd
+cons actions cmd !! (cons cmd cmds1, nil)
+
+defn
+cmd ; dataz1 --> dataz2
+:: :: eval :: 'S_'
+{{ tex [[cmd]] ; [[dataz1]] \longrightarrow  [[dataz2]] }}
+{{ com Performing command [[cmd]] on zipper [[dataz1]] yields zipper [[dataz2]] }}
+by
+
+------------------------------------------------------------------------------- :: insertL1
+insert data L ; (datas1, cur, datas2) --> (cons data datas1, cur, datas2)
+
+insert data L ; (datas1,           cur, datas2) --> (datas1',          cur, datas2)
+------------------------------------------------------------------------------------- :: insertL2
+insert data L ; (cons cur' datas1, cur, datas2) --> (cons cur' datas1', cur, datas2)
+
+------------------------------------------------------------------------------------ :: removeL1
+remove L ; (cons data datas1, cur, datas2) --> (datas1, cur, datas2)
+
+remove L ; (datas1,          cur, datas2) --> (datas1',          cur, datas2)
+--------------------------------------------------------------------------------------- :: removeL2
+remove L ; (cons cur' datas1, cur, datas2) --> (cons cur' datas1', cur, datas2)
+
+remove L ; dataz1 --> dataz2
+insert data L ; dataz2 --> dataz2
+------------------------------------- :: replace
+replace data L ; dataz1 --> dataz3
+
+insert data L ; (datas2, cur, datas1) --> dataz
+---------------------------------------------------- :: insertR
+insert data R ; (datas1, cur, datas2) --> dataz
+
+remove L ; (datas2, cur, datas1) --> dataz
+---------------------------------------------------- :: removeR
+remove R ; (datas1, cur, datas2) --> dataz
+
+replace data L ; (datas2, cur, datas1) --> dataz
+---------------------------------------------------- :: replaceR
+replace data R ; (datas1, cur, datas2) --> dataz
+
+defn
+cmds ; dataz1 !! dataz2
+:: :: cmdz2dataz :: 'C2C_'
+{{ tex [[cmds]] ; [[dataz1]] \Downarrow [[dataz2]] }}
+{{ com Performing commands [[cmds]] on zipper [[dataz1]] yields zipper [[dataz2]] }}
+by
+
+
+-------------------------------------- :: nil
+nil ; dataz !! dataz
+
+cmd ; dataz1 --> dataz2
+cmds ; dataz2 !! dataz3
+-------------------------------------------- :: cons
+cons cmd cmds2 ; dataz1 !! dataz3
