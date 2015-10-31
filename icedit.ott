@@ -1,46 +1,47 @@
 embed {{ tex-preamble }}
 
-metavar cur ::=
-metavar data ::=
+metavar cur  {{ tex \alpha }} ::= {{ com cursor symbols }}
+metavar data {{ tex d }} ::= {{ com data/content symbols }}
 
 grammar
-datacur :: 'datacur_' ::=
-  | data :: :: data
-  | cur :: :: cur
+symb {{ tex s }} :: 'symb_' ::= {{ com atomic symbol, a single unit of information }}
+ | cur :: :: cur {{ com cursor }}
+ | data :: :: data {{ com data/content }}
+
+syms {{ tex S }} :: 'syms_' ::= {{ com symbol string }}
+ | nil             :: :: nil  {{ tex \epsilon }}
+ | cons symb syms :: :: cons {{ tex [[symb]] :: [[syms]] }}
+
+symz {{ tex Z }} :: 'symz_' ::= {{ com symbol zipper }}
+ | ( syms1 , cur , syms2 ) :: :: zipper {{ tex \left<[[syms1]]~|\!|~[[cur]]~|\!|~[[syms2]]\right> }}
 
 grammar
-datas {{ tex ds }} :: 'datas_' ::=
- | nil                :: :: nil
- | cons datacur datas :: :: cons
+dir :: 'dir_' ::= {{ com zipper direction }}
+ | L :: :: Left {{ tex \textsf{L} }}
+ | R :: :: Right {{ tex \textsf{R} }}
 
-dataz {{ tex dz }} :: 'dataz_' ::=
- | ( datas1 , cur , datas2 ) :: :: zipper 
+cmd {{ tex c }} :: 'cmd_' ::= {{ tex commands }}
+ | insert data dir :: :: insert   {{ tex \textsf{ins}~[[data]]~[[dir]] }} {{ com insert [[data]] to direction [[dir]] }}
+ | replace data dir :: :: replace {{ tex \textsf{repl}~[[data]]~[[dir]] }} {{ com replace next data symbol in direction [[dir]] with [[data]] }}
+ | remove dir :: :: remove        {{ tex \textsf{rem}~[[dir]] }} {{ com remove next data symbol in direction [[dir]] }}
+ | jumpto cur :: :: jumpto        {{ com Jump current cursor to position of cursor [[cur]] }} {{ tex \textsf{jmp}~[[cur]] }}
+ | switchto cur :: :: switchto    {{ com Switch current cursor to cursor [[cur]] }} {{ tex \textsf{switch}~[[cur]] }}
+ | mkcursor cur :: :: mkcursor    {{ tex \textsf{mk}~[[cur]] }}
 
+grammar
 action {{ tex a }} :: 'action_' ::= {{ com Actions }}
  | cmd :: :: cmd   {{ com Command }}
  | undo :: :: undo {{ com Undo }}
  | redo :: :: redo {{ com Redo }}
 
-cmds {{ tex cs }} :: 'cmds_' ::=
+cmds {{ tex C }} :: 'cmds_' ::= {{ com Command sequence }}
  | nil           :: :: nil {{ tex \epsilon }}
  | cons cmd cmds :: :: cons {{ tex [[cmd]] :: [[cmds]] }}
 
-cmdz {{ tex cz }} :: 'cmdz_' ::=
+cmdz {{ tex Z_\textsf{C} }} :: 'cmdz_' ::= {{ com Command zipper }}
  | ( cmds1 , cmds2 ) :: :: zipper
 
-dir :: 'dir_' ::=
- | L :: :: Left
- | R :: :: Right
-
-cmd {{ tex c }} :: 'cmd_' ::=
- | insert data dir :: :: insert
- | replace data dir :: :: replace
- | remove dir :: :: remove
- | jumpto cur :: :: jumpto    {{ com Jump current cursor to position of [[cur]] }}
- | switchto cur :: :: switchto{{ com Switch current cursor to [[cur]] }}
- | mkcursor cur :: :: mkcursor
-
-actions :: 'actions_' ::=
+actions {{ tex A }} :: 'actions_' ::= {{ com Action sequence }}
  | nil :: :: nil {{ tex \epsilon }}
  | cons actions action :: :: cons {{ tex [[actions]] :: [[action]] }}
 
@@ -51,7 +52,7 @@ defn
 actions !! cmdz
 :: :: actions2Cmdz :: 'A2C_'
 {{ tex [[actions]] \Downarrow [[cmdz]] }}
-{{ com Performing [[actions]] yields command zipper [[cmdz]] }}
+{{ com Performing actions [[actions]] yields command zipper [[cmdz]] }}
 by
 
 -------------------------------------- :: nil
@@ -69,56 +70,84 @@ actions !! (cmds1, cmds2)
 ---------------------------------------------- :: cmd
 cons actions cmd !! (cons cmd cmds1, nil)
 
+
 defn
-cmd ; dataz1 --> dataz2
+symz1 <-> symz2
+:: :: move :: ''
+{{ tex [[symz1]] \leftrightarrow [[symz2]] }}
+{{ com Zipper [[symz1]] refocuses to [[symz2]] in zero or more steps. }}
+by
+
+------------------ :: Mv_stop
+symz <-> symz
+
+(          syms1, cur, cons symb syms2) <-> symz
+------------------------------------------------------ :: Mv_left
+(cons symb syms1, cur,           syms2) <-> symz
+
+(cons symb syms1, cur,           syms2) <-> symz
+----------------------------------------------------- :: Mv_right
+(          syms1, cur, cons symb syms2) <-> symz
+
+
+defn
+cmd ; symz1 --> symz2
 :: :: eval :: 'S_'
-{{ tex [[cmd]] ; [[dataz1]] \longrightarrow  [[dataz2]] }}
-{{ com Performing command [[cmd]] on zipper [[dataz1]] yields zipper [[dataz2]] }}
+{{ tex [[cmd]] ; [[symz1]] \longrightarrow  [[symz2]] }}
+{{ com Performing command [[cmd]] on zipper [[symz1]] yields zipper [[symz2]] }}
 by
 
 ------------------------------------------------------------------------------- :: insertL1
-insert data L ; (datas1, cur, datas2) --> (cons data datas1, cur, datas2)
+insert data L ; (syms1, cur, syms2) --> (cons data syms1, cur, syms2)
 
-insert data L ; (datas1,           cur, datas2) --> (datas1',          cur, datas2)
+insert data L ; (syms1,           cur, syms2) --> (syms1',          cur, syms2')
 ------------------------------------------------------------------------------------- :: insertL2
-insert data L ; (cons cur' datas1, cur, datas2) --> (cons cur' datas1', cur, datas2)
+insert data L ; (cons cur' syms1, cur, syms2) --> (cons cur' syms1', cur, syms2')
 
 ------------------------------------------------------------------------------------ :: removeL1
-remove L ; (cons data datas1, cur, datas2) --> (datas1, cur, datas2)
+remove L ; (cons data syms1, cur, syms2) --> (syms1, cur, syms2)
 
-remove L ; (datas1,          cur, datas2) --> (datas1',          cur, datas2)
+remove L ; (syms1,          cur, syms2) --> (syms1',          cur, syms2')
 --------------------------------------------------------------------------------------- :: removeL2
-remove L ; (cons cur' datas1, cur, datas2) --> (cons cur' datas1', cur, datas2)
+remove L ; (cons cur' syms1, cur, syms2) --> (cons cur' syms1', cur, syms2')
 
-remove L ; dataz1 --> dataz2
-insert data L ; dataz2 --> dataz2
+remove L ; symz1 --> symz2
+insert data L ; symz2 --> symz3
 ------------------------------------- :: replace
-replace data L ; dataz1 --> dataz3
+replace data L ; symz1 --> symz3
 
-insert data L ; (datas2, cur, datas1) --> dataz
+insert data L ; (syms2, cur, syms1) --> symz
 ---------------------------------------------------- :: insertR
-insert data R ; (datas1, cur, datas2) --> dataz
+insert data R ; (syms1, cur, syms2) --> symz
 
-remove L ; (datas2, cur, datas1) --> dataz
+remove L ; (syms2, cur, syms1) --> symz
 ---------------------------------------------------- :: removeR
-remove R ; (datas1, cur, datas2) --> dataz
+remove R ; (syms1, cur, syms2) --> symz
 
-replace data L ; (datas2, cur, datas1) --> dataz
+replace data L ; (syms2, cur, syms1) --> symz
 ---------------------------------------------------- :: replaceR
-replace data R ; (datas1, cur, datas2) --> dataz
+replace data R ; (syms1, cur, syms2) --> symz
+
+(cons cur1 syms1, cur3, syms2) <-> (syms1', cur3, cons cur2 syms2')
+---------------------------------------------------------------------- :: switchto
+switchto cur2 ; (syms1, cur1, syms2) --> (syms1', cur2, syms2')
+
+(syms1, cur1, syms2) <-> (syms1', cur1, cons cur2 syms2')
+-------------------------------------------------------------------------- :: jumpto
+jumpto cur2 ; (syms1, cur1, syms2) --> (syms1', cur1, cons cur2 syms2')
 
 defn
-cmds ; dataz1 !! dataz2
-:: :: cmdz2dataz :: 'C2C_'
-{{ tex [[cmds]] ; [[dataz1]] \Downarrow [[dataz2]] }}
-{{ com Performing commands [[cmds]] on zipper [[dataz1]] yields zipper [[dataz2]] }}
+cmds ; symz1 !! symz2
+:: :: cmdz2symz :: 'C2C_'
+{{ tex [[cmds]] ; [[symz1]] \Downarrow [[symz2]] }}
+{{ com Performing commands [[cmds]] on zipper [[symz1]] yields zipper [[symz2]] }}
 by
 
 
 -------------------------------------- :: nil
-nil ; dataz !! dataz
+nil ; symz !! symz
 
-cmd ; dataz1 --> dataz2
-cmds ; dataz2 !! dataz3
+cmd ; symz1 --> symz2
+cmds ; symz2 !! symz3
 -------------------------------------------- :: cons
-cons cmd cmds2 ; dataz1 !! dataz3
+cons cmd cmds2 ; symz1 !! symz3
