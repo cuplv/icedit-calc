@@ -100,8 +100,8 @@ symz <-> symz
 defn
 cmd ; symz1 --> symz2
 :: :: eval :: 'S_'
-{{ tex [[cmd]] ; [[symz1]] \longrightarrow  [[symz2]] }}
-{{ com Performing command [[cmd]] on zipper [[symz1]] yields zipper [[symz2]] }}
+{{ tex [[symz1]] \vdash [[cmd]]  \longrightarrow  [[symz2]] }}
+{{ com Under zipper [[symz1]], performing command [[cmd]] yields zipper [[symz2]] }}
 by
 
 ------------------------------------------------------------------------------- :: insertL1
@@ -147,8 +147,8 @@ jumpto curb ; (syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
 defn
 cmds ; symz1 !! symz2
 :: :: cmdz2symz :: 'C2C_'
-{{ tex [[cmds]] ; [[symz1]] \Downarrow [[symz2]] }}
-{{ com Performing commands [[cmds]] on zipper [[symz1]] yields zipper [[symz2]] }}
+{{ tex [[symz1]] \vdash [[cmds]] \Downarrow [[symz2]] }}
+{{ com Under zipper [[symz1]], performing command sequence [[cmds]] yields zipper [[symz2]] }}
 by
 
 
