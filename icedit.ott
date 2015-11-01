@@ -30,9 +30,10 @@ cmd {{ tex c }} :: 'cmd_' ::= {{ tex commands }}
  | insert data dir :: :: insert   {{ tex \textsf{ins}~[[data]]~[[dir]] }} {{ com insert [[data]] to direction [[dir]] }}
  | replace data dir :: :: replace {{ tex \textsf{repl}~[[data]]~[[dir]] }} {{ com replace next data symbol in direction [[dir]] with [[data]] }}
  | remove dir :: :: remove        {{ tex \textsf{rem}~[[dir]] }} {{ com remove next data symbol in direction [[dir]] }}
- | jumpto cur :: :: jumpto        {{ com Jump current cursor to position of cursor [[cur]] }} {{ tex \textsf{jmp}~[[cur]] }}
- | switchto cur :: :: switchto    {{ com Switch current cursor to cursor [[cur]] }} {{ tex \textsf{switch}~[[cur]] }}
- | mkcursor cur :: :: mkcursor    {{ tex \textsf{mk}~[[cur]] }}
+ | jumpto cur :: :: jumpto        {{ com Jump active cursor to position of cursor [[cur]] }} {{ tex \textsf{jmp}~[[cur]] }}
+ | switchto cur :: :: switchto    {{ com Switch active cursor to cursor [[cur]] }} {{ tex \textsf{switch}~[[cur]] }}
+ | join cur :: :: join            {{ com Join active cursor to the identity and position of cursor~[[cur]]. }} {{ tex \textsf{join}~[[cur]] }}
+ | mk cur :: :: mkcursor          {{ com Make a passive cursor~[[cur]] at the position of the active cursor. }}  {{ tex \textsf{mk}~[[cur]] }}
 
 grammar
 action {{ tex a }} :: 'action_' ::= {{ com Actions }}
@@ -143,6 +144,13 @@ switchto curb ; (syms1, cur, syms2) --> (syms1', curb, syms2')
 (syms1, cur, syms2) <-> (snoc curb syms1', cur, syms2')
 -------------------------------------------------------------------------- :: jumpto
 jumpto curb ; (syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
+
+(syms1, cur, syms2) <-> (snoc curb syms1', cur, syms2')
+---------------------------------------------------------------------- :: join
+join curb ; (syms1, cur, syms2) --> (syms1', curb, syms2')
+
+------------------------------------------------------------------- :: mk
+mk curb ; (syms1, cur, syms2) --> (snoc curb syms1, cur, syms2)
 
 defn
 cmds ; symz1 !! symz2
