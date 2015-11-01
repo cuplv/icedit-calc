@@ -13,20 +13,20 @@ symb {{ tex s }} :: 'symb_' ::= {{ com atomic symbol, a single unit of informati
  | cur :: :: cur {{ com cursor }}
  | data :: :: data {{ com data/content }}
 
-syms {{ tex S }} :: 'syms_' ::= {{ com symbol string }}
+syms {{ tex S }} :: 'syms_' ::= {{ com Symbol sequence }}
  | nil             :: :: nil  {{ tex \epsilon }}
  | cons symb syms :: :: cons {{ tex [[symb]] :: [[syms]] }}
  | snoc symb syms :: :: snoc {{ tex [[syms]] :: [[symb]] }}
 
-symz {{ tex Z }} :: 'symz_' ::= {{ com symbol zipper }}
+symz {{ tex Z }} :: 'symz_' ::= {{ com Symbol zipper }}
  | ( syms1 , cur , syms2 ) :: :: zipper {{ tex \left<[[syms1]]~|\!|~[[cur]]~|\!|~[[syms2]]\right> }}
 
 grammar
-dir :: 'dir_' ::= {{ com zipper direction }}
+dir :: 'dir_' ::= {{ com Zipper direction }}
  | L :: :: Left {{ tex \textsf{L} }}
  | R :: :: Right {{ tex \textsf{R} }}
 
-cmd {{ tex c }} :: 'cmd_' ::= {{ tex commands }}
+cmd {{ tex c }} :: 'cmd_' ::= {{ com Command }}
  | insert data dir :: :: insert   {{ tex \textsf{ins}~[[data]]~[[dir]] }} {{ com insert [[data]] to direction [[dir]] }}
  | replace data dir :: :: replace {{ tex \textsf{repl}~[[data]]~[[dir]] }} {{ com replace next data symbol in direction [[dir]] with [[data]] }}
  | remove dir :: :: remove        {{ tex \textsf{rem}~[[dir]] }} {{ com remove next data symbol in direction [[dir]] }}
@@ -36,10 +36,10 @@ cmd {{ tex c }} :: 'cmd_' ::= {{ tex commands }}
  | mk cur :: :: mkcursor          {{ com Make a passive cursor~[[cur]] at the position of the active cursor. }}  {{ tex \textsf{mk}~[[cur]] }}
 
 grammar
-action {{ tex a }} :: 'action_' ::= {{ com Actions }}
- | cmd :: :: cmd   {{ com Command }}
- | undo :: :: undo {{ com Undo }}
- | redo :: :: redo {{ com Redo }}
+action {{ tex a }} :: 'action_' ::= {{ com Action }}
+ | cmd :: :: cmd   {{ com Perform command [[cmd]] }}
+ | undo :: :: undo {{ com Undo previous command action. }} 
+ | redo :: :: redo {{ com Undo previous undo action, redoing undone command action.  }}
 
 cmds {{ tex C }} :: 'cmds_' ::= {{ com Command sequence }}
  | nil           :: :: nil {{ tex \epsilon }}
