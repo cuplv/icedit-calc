@@ -1,7 +1,12 @@
 embed {{ tex-preamble }}
 
-metavar cur  {{ tex \alpha }} ::= {{ com cursor symbols }}
+metavar cur  {{ tex \alpha }} , curb {{ tex \beta }} , curc {{ tex \gamma }} ::= {{ com cursor symbols }}
 metavar data {{ tex d }} ::= {{ com data/content symbols }}
+
+grammar
+formula :: 'formula_' ::=
+ | judgement :: :: judgement
+ | cur fresh :: :: cur_fresh {{ tex [[cur]]~\textsf{fresh} }}
 
 grammar
 symb {{ tex s }} :: 'symb_' ::= {{ com atomic symbol, a single unit of information }}
@@ -128,13 +133,14 @@ replace data L ; (syms2, cur, syms1) --> symz
 ---------------------------------------------------- :: replaceR
 replace data R ; (syms1, cur, syms2) --> symz
 
-(cons cur1 syms1, cur3, syms2) <-> (syms1', cur3, cons cur2 syms2')
+curc fresh
+(cons cur syms1, curc, syms2) <-> (cons curb syms1', curc, syms2')
 ---------------------------------------------------------------------- :: switchto
-switchto cur2 ; (syms1, cur1, syms2) --> (syms1', cur2, syms2')
+switchto curb ; (syms1, cur, syms2) --> (syms1', curb, syms2')
 
-(syms1, cur1, syms2) <-> (syms1', cur1, cons cur2 syms2')
+(syms1, cur, syms2) <-> (cons curb syms1', cur, syms2')
 -------------------------------------------------------------------------- :: jumpto
-jumpto cur2 ; (syms1, cur1, syms2) --> (syms1', cur1, cons cur2 syms2')
+jumpto curb ; (syms1, cur, syms2) --> (cons curb syms1', cur, syms2')
 
 defn
 cmds ; symz1 !! symz2
