@@ -16,6 +16,7 @@ symb {{ tex s }} :: 'symb_' ::= {{ com atomic symbol, a single unit of informati
 syms {{ tex S }} :: 'syms_' ::= {{ com symbol string }}
  | nil             :: :: nil  {{ tex \epsilon }}
  | cons symb syms :: :: cons {{ tex [[symb]] :: [[syms]] }}
+ | snoc symb syms :: :: snoc {{ tex [[syms]] :: [[symb]] }}
 
 symz {{ tex Z }} :: 'symz_' ::= {{ com symbol zipper }}
  | ( syms1 , cur , syms2 ) :: :: zipper {{ tex \left<[[syms1]]~|\!|~[[cur]]~|\!|~[[syms2]]\right> }}
@@ -42,6 +43,7 @@ action {{ tex a }} :: 'action_' ::= {{ com Actions }}
 cmds {{ tex C }} :: 'cmds_' ::= {{ com Command sequence }}
  | nil           :: :: nil {{ tex \epsilon }}
  | cons cmd cmds :: :: cons {{ tex [[cmd]] :: [[cmds]] }}
+ | snoc cmd cmds :: :: snoc {{ tex [[cmds]] :: [[cmd]] }}
 
 cmdz {{ tex Z_\textsf{C} }} :: 'cmdz_' ::= {{ com Command zipper }}
  | ( cmds1 , cmds2 ) :: :: zipper
@@ -88,9 +90,9 @@ symz <-> symz
 
 (          syms1, cur, cons symb syms2) <-> symz
 ------------------------------------------------------ :: Mv_left
-(cons symb syms1, cur,           syms2) <-> symz
+(snoc symb syms1, cur,           syms2) <-> symz
 
-(cons symb syms1, cur,           syms2) <-> symz
+(snoc symb syms1, cur,           syms2) <-> symz
 ----------------------------------------------------- :: Mv_right
 (          syms1, cur, cons symb syms2) <-> symz
 
@@ -103,21 +105,21 @@ cmd ; symz1 --> symz2
 by
 
 ------------------------------------------------------------------------------- :: insertL1
-insert data L ; (syms1, cur, syms2) --> (cons data syms1, cur, syms2)
+insert data L ; (syms1, cur, syms2) --> (snoc data syms1, cur, syms2)
 
 insert data L ; (syms1,           cur, syms2) --> (syms1',          cur, syms2')
 ------------------------------------------------------------------------------------- :: insertL2
-insert data L ; (cons cur' syms1, cur, syms2) --> (cons cur' syms1', cur, syms2')
+insert data L ; (snoc curb syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
 
 ------------------------------------------------------------------------------------ :: removeL1
-remove L ; (cons data syms1, cur, syms2) --> (syms1, cur, syms2)
+remove L ; (snoc data syms1, cur, syms2) --> (syms1, cur, syms2)
 
 remove L ; (syms1,          cur, syms2) --> (syms1',          cur, syms2')
 --------------------------------------------------------------------------------------- :: removeL2
-remove L ; (cons cur' syms1, cur, syms2) --> (cons cur' syms1', cur, syms2')
+remove L ; (snoc curb syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
 
-remove L ; symz1 --> symz2
-insert data L ; symz2 --> symz3
+remove       L ; symz1 --> symz2
+insert  data L ; symz2 --> symz3
 ------------------------------------- :: replace
 replace data L ; symz1 --> symz3
 
@@ -134,13 +136,13 @@ replace data L ; (syms2, cur, syms1) --> symz
 replace data R ; (syms1, cur, syms2) --> symz
 
 curc fresh
-(cons cur syms1, curc, syms2) <-> (cons curb syms1', curc, syms2')
+(snoc cur syms1, curc, syms2) <-> (snoc curb syms1', curc, syms2')
 ---------------------------------------------------------------------- :: switchto
 switchto curb ; (syms1, cur, syms2) --> (syms1', curb, syms2')
 
-(syms1, cur, syms2) <-> (cons curb syms1', cur, syms2')
+(syms1, cur, syms2) <-> (snoc curb syms1', cur, syms2')
 -------------------------------------------------------------------------- :: jumpto
-jumpto curb ; (syms1, cur, syms2) --> (cons curb syms1', cur, syms2')
+jumpto curb ; (syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
 
 defn
 cmds ; symz1 !! symz2
