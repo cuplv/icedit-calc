@@ -66,17 +66,17 @@ by
 -------------------------------------- :: nil
 nil !! (nil, nil)
 
-actions !! (cons cmd cmds1, cmds2)
+actions !! (snoc cmd cmds1, cmds2)
 ---------------------------------------------- :: undo
 cons actions undo !! (cmds1, cons cmd cmds2)
 
 actions !! (cmds1, cons cmd cmds2)
 ---------------------------------------------- :: redo
-cons actions redo  !! (cons cmd cmds1, cmds2)
+cons actions redo  !! (snoc cmd cmds1, cmds2)
 
 actions !! (cmds1, cmds2)
 ---------------------------------------------- :: cmd
-cons actions cmd !! (cons cmd cmds1, nil)
+cons actions cmd !! (snoc cmd cmds1, nil)
 
 
 defn
