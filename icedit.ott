@@ -19,7 +19,7 @@ syms {{ tex S }} :: 'syms_' ::= {{ com Symbol sequence }}
  | snoc symb syms :: :: snoc {{ tex [[syms]] :: [[symb]] }}
 
 symz {{ tex Z }} :: 'symz_' ::= {{ com Symbol zipper }}
- | ( syms1 , cur , syms2 ) :: :: zipper {{ tex \left<[[syms1]]~|\!|~[[cur]]~|\!|~[[syms2]]\right> }}
+ | ( syms1 , cur , syms2 ) :: :: zipper {{ tex \left<[[syms1]]~|\!|~[[cur]]~|\!|~[[syms2]]\right> }} {{ com Consists of symbols to left ([[syms1]]) and right ([[syms2]]) of active cursor [[cur]] }}
 
 grammar
 dir :: 'dir_' ::= {{ com Zipper direction }}
@@ -47,7 +47,7 @@ cmds {{ tex C }} :: 'cmds_' ::= {{ com Command sequence }}
  | snoc cmd cmds :: :: snoc {{ tex [[cmds]] :: [[cmd]] }}
 
 cmdz {{ tex Z_\textsf{C} }} :: 'cmdz_' ::= {{ com Command zipper }}
- | ( cmds1 , cmds2 ) :: :: zipper
+ | ( cmds1 , cmds2 ) :: :: zipper {{ tex \left< [[cmds1]]~|\!|~[[cmds2]] \right> }} {{ com Consists of command history [[cmds1]] and undo buffer [[cmds2]]. }}
 
 actions {{ tex A }} :: 'actions_' ::= {{ com Action sequence }}
  | nil :: :: nil {{ tex \epsilon }}
