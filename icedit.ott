@@ -27,27 +27,29 @@ dir :: 'dir_' ::= {{ com Zipper direction }}
  | R :: :: Right {{ tex \textsf{R} }}
 
 cmd {{ tex c }} :: 'cmd_' ::= {{ com Command }}
- | insert data dir :: :: insert   {{ tex \textsf{ins}~[[data]]~[[dir]] }} {{ com insert [[data]] to direction [[dir]] }}
- | replace data dir :: :: replace {{ tex \textsf{repl}~[[data]]~[[dir]] }} {{ com replace next data symbol in direction [[dir]] with [[data]] }}
- | remove dir :: :: remove        {{ tex \textsf{rem}~[[dir]] }} {{ com remove next data symbol in direction [[dir]] }}
- | jumpto cur :: :: jumpto        {{ com Jump active cursor to position of cursor [[cur]] }} {{ tex \textsf{jmp}~[[cur]] }}
- | switchto cur :: :: switchto    {{ com Switch active cursor to cursor [[cur]] }} {{ tex \textsf{switch}~[[cur]] }}
- | join cur :: :: join            {{ com Join active cursor to the identity and position of cursor~[[cur]]. }} {{ tex \textsf{join}~[[cur]] }}
+ | insert data dir :: :: insert   {{ tex \textsf{ins}~[[data]]~[[dir]] }} {{ com Insert [[data]] to direction [[dir]] }}
+ | remove dir :: :: remove        {{ tex \textsf{rem}~[[dir]] }} {{ com Remove next data symbol in direction [[dir]] }}
+ | move dir :: :: move            {{ com Move the cursor over the data symbol to direction [[dir]] }} {{ tex \textsf{move}~[[dir]] }}
+ | replace data dir :: :: replace {{ tex \textsf{repl}~[[data]]~[[dir]] }} {{ com Replace next data symbol in direction [[dir]] with [[data]] }}
  | mk cur :: :: mkcursor          {{ com Make a passive cursor~[[cur]] at the position of the active cursor. }}  {{ tex \textsf{mk}~[[cur]] }}
-
-grammar
-action {{ tex a }} :: 'action_' ::= {{ com Action }}
- | cmd :: :: cmd   {{ com Perform command [[cmd]] }}
- | undo :: :: undo {{ com Undo previous command action. }} 
- | redo :: :: redo {{ com Undo previous undo action, redoing undone command action.  }}
+ | switchto cur :: :: switchto    {{ com Switch active cursor to cursor [[cur]] }} {{ tex \textsf{switch}~[[cur]] }}
+ | jumpto cur :: :: jumpto        {{ com Jump active cursor to position of cursor [[cur]] }} {{ tex \textsf{jmp}~[[cur]] }}
+ | join cur :: :: join            {{ com Join active cursor to the identity and position of cursor~[[cur]]. }} {{ tex \textsf{join}~[[cur]] }}
 
 cmds {{ tex C }} :: 'cmds_' ::= {{ com Command sequence }}
  | nil           :: :: nil {{ tex \epsilon }}
  | cons cmd cmds :: :: cons {{ tex [[cmd]] :: [[cmds]] }}
  | snoc cmd cmds :: :: snoc {{ tex [[cmds]] :: [[cmd]] }}
+ | ( rev cmds )  :: M :: rev {{ tex \textsf{rev}([[cmds]]) }} {{ com Command sequence [[cmds]], in reverse order. }}
 
 cmdz {{ tex Z_\textsf{C} }} :: 'cmdz_' ::= {{ com Command zipper }}
  | ( cmds1 , cmds2 ) :: :: zipper {{ tex \left< [[cmds1]]~|\!|~[[cmds2]] \right> }} {{ com Consists of command history [[cmds1]] and undo buffer [[cmds2]]. }}
+
+grammar
+action {{ tex a }} :: 'action_' ::= {{ com Action }}
+ | cmd :: :: cmd   {{ com Perform command [[cmd]] }} {{ tex \textsf{cmd}~[[cmd]] }}
+ | undo :: :: undo {{ com Undo previous command action. }} {{ tex \textsf{undo} }}
+ | redo :: :: redo {{ com Undo previous undo action, redoing undone command action.  }} {{ tex \textsf{redo} }}
 
 actions {{ tex A }} :: 'actions_' ::= {{ com Action sequence }}
  | nil :: :: nil {{ tex \epsilon }}
@@ -55,29 +57,6 @@ actions {{ tex A }} :: 'actions_' ::= {{ com Action sequence }}
 
 defns
 J :: '' ::=
-
-defn
-actions !! cmdz
-:: :: actions2Cmdz :: 'A2C_'
-{{ tex [[actions]] \Downarrow [[cmdz]] }}
-{{ com Performing actions [[actions]] yields command zipper [[cmdz]] }}
-by
-
--------------------------------------- :: nil
-nil !! (nil, nil)
-
-actions !! (snoc cmd cmds1, cmds2)
----------------------------------------------- :: undo
-cons actions undo !! (cmds1, cons cmd cmds2)
-
-actions !! (cmds1, cons cmd cmds2)
----------------------------------------------- :: redo
-cons actions redo  !! (snoc cmd cmds1, cmds2)
-
-actions !! (cmds1, cmds2)
----------------------------------------------- :: cmd
-cons actions cmd !! (snoc cmd cmds1, nil)
-
 
 defn
 symz1 <-> symz2
@@ -100,7 +79,7 @@ symz <-> symz
 
 defn
 cmd ; symz1 --> symz2
-:: :: eval :: 'S_'
+:: :: eval :: 'Ec_'
 {{ tex [[symz1]] \vdash [[cmd]]  \longrightarrow  [[symz2]] }}
 {{ com Under zipper [[symz1]], performing command [[cmd]] yields zipper [[symz2]] }}
 by
@@ -119,9 +98,16 @@ remove L ; (syms1,          cur, syms2) --> (syms1',          cur, syms2')
 --------------------------------------------------------------------------------------- :: removeL2
 remove L ; (snoc curb syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
 
+----------------------------------------------------------------------------------- :: moveL1
+move L ; (snoc data syms1, cur, syms2) --> (syms1, cur, cons data syms2)
+
+move L ; (syms1, cur, syms2) --> (syms1', cur, syms2')
+---------------------------------------------------------------------------- :: moveL2
+move L ; (snoc curb syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
+
 remove       L ; symz1 --> symz2
 insert  data L ; symz2 --> symz3
-------------------------------------- :: replace
+------------------------------------- :: replaceL
 replace data L ; symz1 --> symz3
 
 insert data L ; (syms2, cur, syms1) --> symz
@@ -131,6 +117,10 @@ insert data R ; (syms1, cur, syms2) --> symz
 remove L ; (syms2, cur, syms1) --> symz
 ---------------------------------------------------- :: removeR
 remove R ; (syms1, cur, syms2) --> symz
+
+move L ; (syms2, cur, syms1) --> symz
+------------------------------------------------------ :: moveR
+move R ; (syms1, cur, syms2) --> symz
 
 replace data L ; (syms2, cur, syms1) --> symz
 ---------------------------------------------------- :: replaceR
@@ -154,11 +144,10 @@ mk curb ; (syms1, cur, syms2) --> (snoc curb syms1, cur, syms2)
 
 defn
 cmds ; symz1 !! symz2
-:: :: cmdz2symz :: 'C2C_'
+:: :: cmdz2symz :: 'EC_'
 {{ tex [[symz1]] \vdash [[cmds]] \Downarrow [[symz2]] }}
 {{ com Under zipper [[symz1]], performing command sequence [[cmds]] yields zipper [[symz2]] }}
 by
-
 
 -------------------------------------- :: nil
 nil ; symz !! symz
@@ -166,4 +155,41 @@ nil ; symz !! symz
 cmd ; symz1 --> symz2
 cmds ; symz2 !! symz3
 -------------------------------------------- :: cons
-cons cmd cmds2 ; symz1 !! symz3
+cons cmd cmds ; symz1 !! symz3
+
+
+defn
+actions !! cmdz
+:: :: actions2Cmdz :: 'EAC_'
+{{ tex [[actions]] \Downarrow [[cmdz]] }}
+{{ com Performing action sequence [[actions]] yields command zipper [[cmdz]] }}
+by
+
+-------------------------------------- :: nil
+nil !! (nil, nil)
+
+actions !! (snoc cmd cmds1, cmds2)
+---------------------------------------------- :: undo
+cons actions undo !! (cmds1, cons cmd cmds2)
+
+actions !! (cmds1, cons cmd cmds2)
+---------------------------------------------- :: redo
+cons actions redo  !! (snoc cmd cmds1, cmds2)
+
+actions !! (cmds1, cmds2)
+---------------------------------------------- :: cmd
+cons actions cmd !! (snoc cmd cmds1, nil)
+
+
+defn
+actions !! symz
+:: :: actions2Symz :: ''
+{{ tex [[actions]] \Downarrow [[symz]] }}
+{{ com Performing action sequence [[actions]] yields symbol zipper [[symz]] }}
+by
+
+cur fresh
+actions !! (cmds1, cmds2)
+(rev cmds1) ; (nil, cur, nil) !! symz
+-------------------------------------- :: ZofA
+actions !! symz
