@@ -20,6 +20,7 @@ syms {{ tex S }} :: 'syms_' ::= {{ com Symbol sequence }}
 
 symz {{ tex Z }} :: 'symz_' ::= {{ com Symbol zipper }}
  | ( syms1 , cur , syms2 ) :: :: zipper {{ tex \left<[[syms1]]~|\!|~[[cur]]~|\!|~[[syms2]]\right> }} {{ com Consists of symbols to left ([[syms1]]) and right ([[syms2]]) of active cursor [[cur]] }}
+ | ( rev symz ) :: M :: rev {{ tex \textsf{rev}([[symz]]) }} {{ com The symbol zipper [[symz]] in reverse order (flipped left and right) }}
 
 grammar
 dir :: 'dir_' ::= {{ com Zipper direction }}
@@ -110,21 +111,21 @@ insert  data L ; symz2 --> symz3
 ------------------------------------- :: replaceL
 replace data L ; symz1 --> symz3
 
-insert data L ; (syms2, cur, syms1) --> symz
+insert data L ; (rev symz) --> (rev symz')
 ---------------------------------------------------- :: insertR
-insert data R ; (syms1, cur, syms2) --> symz
+insert data R ; symz --> symz
 
-remove L ; (syms2, cur, syms1) --> symz
+remove L ; (rev symz) --> (rev symz')
 ---------------------------------------------------- :: removeR
-remove R ; (syms1, cur, syms2) --> symz
+remove R ; symz --> symz
 
-move L ; (syms2, cur, syms1) --> symz
+move L ; (rev symz) --> (rev symz')
 ------------------------------------------------------ :: moveR
-move R ; (syms1, cur, syms2) --> symz
+move R ; symz --> symz'
 
-replace data L ; (syms2, cur, syms1) --> symz
+replace data L ; (rev symz) --> (rev symz')
 ---------------------------------------------------- :: replaceR
-replace data R ; (syms1, cur, syms2) --> symz
+replace data R ; symz --> symz'
 
 curc fresh
 (snoc cur syms1, curc, syms2) <-> (snoc curb syms1', curc, syms2')
