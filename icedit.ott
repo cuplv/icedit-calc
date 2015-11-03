@@ -102,9 +102,9 @@ remove L ; (snoc curb syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
 ----------------------------------------------------------------------------------- :: moveL1
 move L ; (snoc data syms1, cur, syms2) --> (syms1, cur, cons data syms2)
 
-move L ; (syms1, cur, syms2) --> (syms1', cur, syms2')
+move L ; (syms1, cur, cons curb syms2) --> symz
 ---------------------------------------------------------------------------- :: moveL2
-move L ; (snoc curb syms1, cur, syms2) --> (snoc curb syms1', cur, syms2')
+move L ; (snoc curb syms1, cur, syms2) --> symz
 
 remove       L ; symz1 --> symz2
 insert  data L ; symz2 --> symz3
@@ -113,11 +113,11 @@ replace data L ; symz1 --> symz3
 
 insert data L ; (rev symz) --> (rev symz')
 ---------------------------------------------------- :: insertR
-insert data R ; symz --> symz
+insert data R ; symz --> symz'
 
 remove L ; (rev symz) --> (rev symz')
 ---------------------------------------------------- :: removeR
-remove R ; symz --> symz
+remove R ; symz --> symz'
 
 move L ; (rev symz) --> (rev symz')
 ------------------------------------------------------ :: moveR
