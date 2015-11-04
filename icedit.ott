@@ -9,7 +9,7 @@ formula :: 'formula_' ::=
  | cur fresh :: :: cur_fresh {{ tex [[cur]]~\textsf{fresh} }}
 
 grammar
-symb {{ tex s }} :: 'symb_' ::= {{ com atomic symbol, a single unit of information }}
+symb {{ tex s }} :: 'sym_' ::= {{ com atomic symbol, a single unit of information }}
  | cur :: :: cur {{ com cursor }}
  | data :: :: data {{ com data/content }}
 
@@ -194,3 +194,51 @@ actions !! (cmds1, cmds2)
 (rev cmds1) ; (nil, cur, nil) !! symz
 -------------------------------------- :: ZofA
 actions !! symz
+
+
+
+
+grammar
+curs {{ tex \bar{\alpha} }} :: 'curs_' ::= {{ com Sequence of cursors }}
+ | cur curs :: :: curs
+ | nil :: :: nil {{ tex \epsilon }}
+
+symtree {{ tex T }} :: 'T_' ::= {{ com Unfocused symbol tree. }}
+ | nil :: :: nil {{ tex \epsilon }} {{ com Empty tree }}
+ | symb :: :: symb {{ com Symbol }}
+ | ( bin curs1 symtree1 curs2 symtree2 ) :: :: bin {{ tex \left<\!\left[ [[curs1]]~[[symtree1]]~|\!|~[[curs2]]~[[symtree2]] \right]\!\right> }} {{ com Binary tree; [[curs1]] are cursors in [[symtree1]]; [[curs2]] are cursors in [[symtree2]]  }}
+
+syms {{ tex S }} :: 'syms_' ::=
+ | ( seq symtree ) :: :: seq {{ com Sequence of tree [[symtree]] }} {{ tex \textsf{seq}([[symtree]]) }}
+
+
+defns
+Jdet :: '' ::=
+
+
+defn
+next dir ; symtree1 ; symtree2 !! syms
+:: :: next2 :: 'next2_'
+{{ tex [[symtree1]] ; [[symtree2]] \Downarrow^{\textsf{next} }_{[[dir]]} [[syms]] }}
+{{ com From he [[dir]]-most position; the symbol sequence [[symtree1]] followed by [[symtree2]] is [[syms]]. }}
+by
+
+------------------------------------------ :: nil1
+next dir ; nil ; nil !! nil
+
+next dir ; symtree ; nil !! syms
+------------------------------------------ :: nil2
+next dir ; nil ; symtree !! syms
+
+--------------------------------------------------------- :: sym
+next dir ; symb ; symtree !! cons symb (seq symtree)
+
+next L ; symtree1 ; (bin nil symtree2 nil symtree3) !! syms
+------------------------------------------------------------------- :: binL
+next L ; (bin curs1 symtree1 curs2 symtree2) ; symtree3 !! syms
+
+next R ; symtree2 ; (bin nil symtree3 nil symtree1 ) !! syms
+------------------------------------------------------------------- :: binR
+next R ; (bin curs1 symtree1 curs2 symtree2) ; symtree3 !! syms
+
+
