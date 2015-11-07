@@ -217,10 +217,19 @@ Jdet :: '' ::=
 
 
 defn
+focus cur ; symtree !! symz
+:: :: find :: 'find_'
+{{ tex [[symtree]] \Downarrow^{\textsf{focus} }_{[[cur]]} [[symz]] }}
+by
+
+------------------------------------ :: cur
+focus cur ; cur !! (nil, cur, nil)
+
+defn
 next dir ; symtree1 ; symtree2 !! syms
-:: :: next2 :: 'next2_'
+:: :: next :: 'next_'
 {{ tex [[symtree1]] ; [[symtree2]] \Downarrow^{\textsf{next} }_{[[dir]]} [[syms]] }}
-{{ com From he [[dir]]-most position; the symbol sequence [[symtree1]] followed by [[symtree2]] is [[syms]]. }}
+{{ com From the [[dir]]-most position; the symbol sequence [[symtree1]] followed by [[symtree2]] is [[syms]]. }}
 by
 
 ------------------------------------------ :: nil1
