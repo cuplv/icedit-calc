@@ -26,9 +26,6 @@ by
 ------------------------------------ :: cur
 focus cur ; cur !! (nil, cur, nil)
 
------------------------------------- :: cur
-focus cur ; cur !! (nil, cur, nil)
-
 defn
 next dir ; symtree1 ; symtree2 !! syms
 :: :: next :: 'next_'
