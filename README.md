@@ -1,9 +1,7 @@
+This PDF gives the formal semantics of **ICEdit**:
 
-Starting point, for Ott examples:
+  https://github.com/cuplv/icedit-calc/blob/master/icedit-spec.pdf
 
-  https://git.cs.colorado.edu/maha2973/csci5535-langs
-
-
-The Makefile in this directory requires Ott:
+This PDF was created with **Ott**:
 
   http://www.cl.cam.ac.uk/~pes20/ott/
