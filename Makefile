@@ -1,7 +1,7 @@
-test.pdf: Makefile icedit.ott
-	ott -merge true -i icedit.ott -o icedit.tex
-	pdflatex icedit.tex
+icedit-spec.pdf: Makefile icedit.ott
+	ott -merge true -i icedit-spec.ott -o icedit-spec.tex
+	pdflatex icedit-spec.tex
 
 clean:
 	rm -rf \
-		icedit.pdf icedit.tex \
+		icedit-spec.pdf icedit-spec.tex \
